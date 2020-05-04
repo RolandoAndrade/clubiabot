@@ -19,5 +19,7 @@ if __name__ == '__main__':
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler('start', bot.start))
     dispatcher.add_handler(MessageHandler(filters=Filters.text, callback=bot.handle_message))
+    dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bot.add_group))
+
     updater.start_polling()
     updater.idle()
