@@ -4,6 +4,16 @@ from telegram.ext import Updater, Filters
 from telegram.ext import CommandHandler, MessageHandler
 
 from bot.logger import logger
+import flask
+
+app = flask.Flask(__name__)
+
+
+@app.route("/")
+def index():
+    # do whatevr here...
+    return "Index"
+
 
 global bot
 bot = Clubiabot(API_KEY)
@@ -23,3 +33,4 @@ if __name__ == '__main__':
 
     updater.start_polling()
     updater.idle()
+    app.run(threaded=True)
