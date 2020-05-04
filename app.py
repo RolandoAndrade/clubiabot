@@ -1,7 +1,15 @@
 import re
+
 from flask import Flask, request
 import telegram
-from bot.credentials import API_KEY, URL
+from bot.credentials import API_KEY, URL, NAME
+from telegram.ext import Updater
+import logging
+from telegram.ext import CommandHandler
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(NAME)
+level = logging.INFO
 
 global bot
 bot = telegram.Bot(token=API_KEY)
@@ -9,8 +17,17 @@ bot = telegram.Bot(token=API_KEY)
 app = Flask(__name__)
 
 
+def start(bot, update):
+    logger.info('He recibido un comando start')
+    bot.send_message(
+        chat_id=update.message.chat_id,
+        text="Soy un Achicayna, que entre los primeros pobladores de Canarias era el equivalente a un plebeyo."
+    )
+
+
 @app.route('/{}'.format(API_KEY), methods=['POST'])
 def respond():
+    logger.info('Entro')
     # retrieve the message in JSON and then transform it to Telegram object
     update = telegram.Update.de_json(request.get_json(force=True), bot)
 
@@ -49,14 +66,16 @@ def respond():
     return 'ok'
 
 
-@app.route('/set_webhook', methods=['GET', 'POST'])
+@app.route('/setwebhook', methods=['GET', 'POST'])
 def set_webhook():
-    s = bot.setWebhook(URL)
+    # we use the bot object to link the bot to our app which live
+    # in the link provided by URL
+    s = bot.setWebhook('{URL}{HOOK}'.format(URL=URL, HOOK=API_KEY))
+    # something to let us know things work
     if s:
         return "webhook setup ok"
     else:
         return "webhook setup failed"
-
 
 @app.route('/')
 def index():
@@ -64,4 +83,9 @@ def index():
 
 
 if __name__ == '__main__':
+    """updater = Updater(token=API_KEY)
+    dispatcher = updater.dispatcher
+    dispatcher.add_handler(CommandHandler('start', start))
+    updater.start_polling()
+    updater.idle()"""
     app.run(threaded=True)
