@@ -19,6 +19,7 @@ welcome_text = "Bienvenido {username},\n " \
                "¿Crees que la IA nos destruirá?, ¿Qué expectativas tienes? y cualquier otra cosa que creas que pueda ser " \
                "interesante, ¡Seguro tienes muchas historias que contar! ¿Estás listo para iniciar?"
 
+
 class Clubiabot(telegram.Bot):
     def __init__(self, token):
         super().__init__(token=token)
@@ -66,15 +67,16 @@ class Clubiabot(telegram.Bot):
             )
             logger.info('Error en comando introducido')
 
-
     def receive_message(self, update):
         text = update.message.text
-        member = update.message.new_chat_members
-        if "/start" in text:
-            self.start(update)
-        elif len(member) > 0:
-            self.add_group(update)
-        elif "/update_welcome_text" in text:
-            self.update_welcome_text(update)
+        if text is None:
+            member = update.message.new_chat_members
+            if len(member) > 0:
+                self.add_group(update)
         else:
-            self.handle_message(update)
+            if "/start" in text:
+                self.start(update)
+            elif "/update_welcome_text" in text:
+                self.update_welcome_text(update)
+            else:
+                self.handle_message(update)
