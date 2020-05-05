@@ -54,9 +54,11 @@ class Clubiabot(telegram.Bot):
         try:
             text = text.split(" ", 2)
             if text[1] == USER_PASSWORD:
+                logger.info("Contraseña correcta")
                 self.welcome_text = text[2]
             else:
-                update.message.reply_text(wrong_command_text)
+                logger.info("Contraseña incorrecta")
+                update.message.reply_text(wrong_password_text)
         except:
             self.send_message(
                 chat_id=update.message.chat_id,
