@@ -1,25 +1,46 @@
-from bot.bot import Clubiabot
-from bot.credentials import API_KEY
-from telegram.ext import Updater, Filters
-from telegram.ext import CommandHandler, MessageHandler
 
-from bot.logger import logger
+from flask import Flask, request
+import telegram
+
+from bot.bot import Clubiabot
+from bot.credentials import API_KEY, URL
 
 global bot
-bot = Clubiabot(API_KEY)
+global TOKEN
+TOKEN = API_KEY
+bot = Clubiabot(token=TOKEN)
 
+app = Flask(__name__)
 
-def error_callback(update, context):
-    logger.warning('Update "%s" ha provocado el error "%s"', update, context.error)
+@app.route('/{}'.format(TOKEN), methods=['POST'])
+def respond():
+    # retrieve the message in JSON and then transform it to Telegram object
+    update = telegram.Update.de_json(request.get_json(force=True), bot)
+
+    chat_id = update.message.chat.id
+    msg_id = update.message.message_id
+
+    # Telegram understands UTF-8, so encode text for unicode compatibility
+    text = update.message.text.encode('utf-8').decode()
+    print("got text message :", text)
+
+    response = "Respuesta"
+    bot.sendMessage(chat_id=chat_id, text=response, reply_to_message_id=msg_id)
+
+    return 'ok'
+
+@app.route('/setwebhook', methods=['GET', 'POST'])
+def set_webhook():
+    s = bot.setWebhook('{URL}{HOOK}'.format(URL=URL, HOOK=TOKEN))
+    if s:
+        return "webhook setup ok"
+    else:
+        return "webhook setup failed"
+
+@app.route('/')
+def index():
+    return '.'
 
 
 if __name__ == '__main__':
-    logger.info('El bot ha iniciado')
-    updater = Updater(token=API_KEY, use_context=True)
-    dispatcher = updater.dispatcher
-    dispatcher.add_handler(CommandHandler('start', bot.start))
-    dispatcher.add_handler(MessageHandler(filters=Filters.text, callback=bot.handle_message))
-    dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bot.add_group))
-
-    updater.start_polling()
-    updater.idle()
+    app.run(threaded=True)
