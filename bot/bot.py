@@ -68,7 +68,7 @@ class Clubiabot(telegram.Bot):
 
 
     def receive_message(self, update):
-        text = update.message.text.encode('utf-8').decode()
+        text = update.message.text
         member = update.message.new_chat_members
         if "/start" in text:
             self.start(update)
