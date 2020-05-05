@@ -22,6 +22,7 @@ welcome_text = "Bienvenido {username},\n " \
 class Clubiabot(telegram.Bot):
     def __init__(self, token):
         super().__init__(token=token)
+        self.welcome_text = welcome_text
 
     def start(self, update):
         logger.info('He recibido un comando START')
@@ -44,7 +45,7 @@ class Clubiabot(telegram.Bot):
     def add_group(self, update):
         logger.info('Alguien ha entrado al grupo')
         for member in update.message.new_chat_members:
-            update.message.reply_text(welcome_text.format(
+            update.message.reply_text(self.welcome_text.format(
                 username=member.username))
 
     def update_welcome_text(self, update):
@@ -53,10 +54,9 @@ class Clubiabot(telegram.Bot):
         try:
             text = text.split(" ", 2)
             if text[1] == USER_PASSWORD:
-                pass
+                self.welcome_text = text[2]
             else:
-                update.message.reply_text(welcome_text.format(
-                    username=wrong_command_text))
+                update.message.reply_text(wrong_command_text)
         except:
             self.send_message(
                 chat_id=update.message.chat_id,
